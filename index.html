@@ -21,8 +21,6 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            width: 100vw;
         }
 
         #mapid {
@@ -47,8 +45,20 @@
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
         integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
         crossorigin=""></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
     <script type="text/javascript">
+
+        function add_map(mymap) {
+            L.tileLayer('https://maps.googleapis.com/maps/vt?pb=!1m5!1m4!1i{z}!2i{x}!3i{y}!4i256!2m3!1e0!2sm!3i437142095!3m14!2spt-BR!3sBR!5e18!12m1!1e68!12m3!1e37!2m1!1ssmartmaps!12m4!1e26!2m2!1sstyles!2zcy50OjMzfHMuZTpsfHAudjpvZmY!4e0!23i1301875', {
+                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+                maxZoom: 18,
+                id: 'mapbox/streets-v11',
+                tileSize: 512,
+                zoomOffset: -1,
+                accessToken: 'your.mapbox.access.token'
+            }).addTo(mymap);
+        }
 
         L.Map.include({
             'clearLayers': function () {
@@ -60,30 +70,12 @@
 
         var mymap = L.map('mapid').setView([40.2288202, -8.4512937], 7);
         var myLayer = L.geoJSON().addTo(mymap);
+        add_map(myLayer);
 
-        L.tileLayer('https://maps.googleapis.com/maps/vt?pb=!1m5!1m4!1i{z}!2i{x}!3i{y}!4i256!2m3!1e0!2sm!3i437142095!3m14!2spt-BR!3sBR!5e18!12m1!1e68!12m3!1e37!2m1!1ssmartmaps!12m4!1e26!2m2!1sstyles!2zcy50OjMzfHMuZTpsfHAudjpvZmY!4e0!23i1301875', {
-            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-            maxZoom: 18,
-            id: 'mapbox/streets-v11',
-            tileSize: 512,
-            zoomOffset: -1,
-            accessToken: 'your.mapbox.access.token'
-        }).addTo(mymap);
 
         document.querySelector('#limpar').addEventListener('click', function (event) {
-            mymap.eachLayer(function (layer) {
-                mymap.removeLayer(layer);
-            });
 
-            L.tileLayer('https://maps.googleapis.com/maps/vt?pb=!1m5!1m4!1i{z}!2i{x}!3i{y}!4i256!2m3!1e0!2sm!3i437142095!3m14!2spt-BR!3sBR!5e18!12m1!1e68!12m3!1e37!2m1!1ssmartmaps!12m4!1e26!2m2!1sstyles!2zcy50OjMzfHMuZTpsfHAudjpvZmY!4e0!23i1301875', {
-                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-                maxZoom: 18,
-                id: 'mapbox/streets-v11',
-                tileSize: 512,
-                zoomOffset: -1,
-                accessToken: 'your.mapbox.access.token'
-            }).addTo(mymap);
-
+            add_map(myLayer);
             myLayer = L.geoJSON().addTo(mymap);
         });
 
@@ -97,41 +89,68 @@
             var space = virgula_ref.split(" ")
             var params = space.join("+")
 
-            var locations = []
-            fetch("https://nominatim.openstreetmap.org/search.php?q=" + params + "&format=jsonv2").then((response) => {
-                return response.json()
-            }).then(obj => {
 
-                try {
+            var myHeaders = new Headers();
+            var myHeaders2 = new Headers();
+            myHeaders.append("Content-Type", "Application/json");
+            myHeaders.append("Accept", "application/json");
 
-                    var url = "https://polygons.openstreetmap.fr/get_geojson.py?id=" + obj[0].osm_id + "&params=0"
-                    fetch(url)
-                        .then((response) => {
-                            var json = undefined
-                            try {
-                                json = response.json()
-                            } catch (error) { }
-                            return json
-                        }).then(obj => {
-                            // locations.push(obj)
+            myHeaders2.append("Content-Type", "application/json");
+            myHeaders2.append("Accept", "application/json");
 
-                            var geoJson = {
-                                "type": "LineString",
-                                "coordinates": obj["geometries"][0]["coordinates"]
-                            }
+            var myInit = {
+                headers: myHeaders,
+                mode: 'cors',
+                redirect: 'follow'
+            };
 
-                            myLayer.addData(obj);
-                        })
-                        .catch((err) => {
-                            alert("Não foi possivel localizar: " + local)
-                        });
-
-                } catch (error) {
-                    console.error(error);
-                }
-
-
+            mymap.eachLayer(function (layer) {
+                mymap.removeLayer(layer);
             });
+
+            var locations = []
+            axios.get("https://nominatim.openstreetmap.org/search.php?q=" + params + "&format=jsonv2")
+                .then((response) => {
+
+                    return response.data
+                }).then(obj => {
+
+                    try {
+
+                        var myInit2 = {
+                            headers: myHeaders2,
+                            mode: 'cors',
+                            redirect: 'follow'
+                        };
+                        var url = "https://cors-anywhere.herokuapp.com///polygons.openstreetmap.fr/get_geojson.py?id=" + obj[0].osm_id + "&params=0"
+                        axios.get(url, {
+                            proxy: {
+                                host: 'localhost',
+                                port: 3000
+                            }
+                        })
+                            .then((response) => {
+                                var json = undefined
+                                try {
+                                    json = response.data
+                                } catch (error) { }
+                                return json
+                            }).then(obj => {
+
+                                debugger
+                                add_map(mymap);
+                                myLayer = L.geoJSON().addTo(mymap);
+                                myLayer.addData(obj);
+                            })
+                            .catch((err) => {
+                                alert("Não foi possivel localizar: " + local)
+                            });
+
+                    } catch (error) {
+                        console.error(error);
+                    }
+
+                });
 
         });
 
