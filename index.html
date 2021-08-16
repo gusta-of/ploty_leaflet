@@ -104,7 +104,7 @@
 
                 try {
 
-                    var url = "http://polygons.openstreetmap.fr/get_geojson.py?id=" + obj[0].osm_id + "&params=0"
+                    var url = "https://polygons.openstreetmap.fr/get_geojson.py?id=" + obj[0].osm_id + "&params=0"
                     fetch(url)
                         .then((response) => {
                             var json = undefined
