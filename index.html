@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+        integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+        crossorigin="" />
+
+
+    <style type="text/css">
+        html,
+        body {
+            padding: 20px;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        #mapid {
+            height: 80vh;
+            width: 80vw;
+        }
+    </style>
+</head>
+
+<body>
+    <input type="text" id="local" placeholder="local aqui..!" style="height: 40px; width: 800px; font-size: 15px;">
+    <br />
+    <div style="display: flex;">
+        <button id="enviar" style="margin: 5px;">Enviar</button>
+        <button id="limpar" style="margin: 5px;">Limpar</button>
+    </div>
+
+    <br />
+    <div id="geojson" style="color: red;"></div>
+    <div id="mapid"></div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin=""></script>
+
+    <script type="text/javascript">
+
+        L.Map.include({
+            'clearLayers': function () {
+                this.eachLayer(function (layer) {
+                    this.removeLayer(layer);
+                }, this);
+            }
+        });
+
+        var mymap = L.map('mapid').setView([40.2288202, -8.4512937], 7);
+        var myLayer = L.geoJSON().addTo(mymap);
+
+        L.tileLayer('https://maps.googleapis.com/maps/vt?pb=!1m5!1m4!1i{z}!2i{x}!3i{y}!4i256!2m3!1e0!2sm!3i437142095!3m14!2spt-BR!3sBR!5e18!12m1!1e68!12m3!1e37!2m1!1ssmartmaps!12m4!1e26!2m2!1sstyles!2zcy50OjMzfHMuZTpsfHAudjpvZmY!4e0!23i1301875', {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+            maxZoom: 18,
+            id: 'mapbox/streets-v11',
+            tileSize: 512,
+            zoomOffset: -1,
+            accessToken: 'your.mapbox.access.token'
+        }).addTo(mymap);
+
+        document.querySelector('#limpar').addEventListener('click', function (event) {
+            mymap.eachLayer(function (layer) {
+                mymap.removeLayer(layer);
+            });
+
+            L.tileLayer('https://maps.googleapis.com/maps/vt?pb=!1m5!1m4!1i{z}!2i{x}!3i{y}!4i256!2m3!1e0!2sm!3i437142095!3m14!2spt-BR!3sBR!5e18!12m1!1e68!12m3!1e37!2m1!1ssmartmaps!12m4!1e26!2m2!1sstyles!2zcy50OjMzfHMuZTpsfHAudjpvZmY!4e0!23i1301875', {
+                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+                maxZoom: 18,
+                id: 'mapbox/streets-v11',
+                tileSize: 512,
+                zoomOffset: -1,
+                accessToken: 'your.mapbox.access.token'
+            }).addTo(mymap);
+
+            myLayer = L.geoJSON().addTo(mymap);
+        });
+
+        document.querySelector('#enviar').addEventListener('click', function (event) {
+            event.preventDefault();
+
+            var local = document.querySelector('#local').value
+            var virgula = local.split(",")
+            var virgula_ref = virgula.join("%2C")
+
+            var space = virgula_ref.split(" ")
+            var params = space.join("+")
+
+            var locations = []
+            fetch("https://nominatim.openstreetmap.org/search.php?q=" + params + "&format=jsonv2").then((response) => {
+                return response.json()
+            }).then(obj => {
+
+                try {
+
+                    var url = "http://polygons.openstreetmap.fr/get_geojson.py?id=" + obj[0].osm_id + "&params=0"
+                    fetch(url)
+                        .then((response) => {
+                            var json = undefined
+                            try {
+                                json = response.json()
+                            } catch (error) { }
+                            return json
+                        }).then(obj => {
+                            // locations.push(obj)
+
+                            var geoJson = {
+                                "type": "LineString",
+                                "coordinates": obj["geometries"][0]["coordinates"]
+                            }
+
+                            myLayer.addData(obj);
+                        })
+                        .catch((err) => {
+                            alert("Não foi possivel localizar: " + local)
+                        });
+
+                } catch (error) {
+                    console.error(error);
+                }
+
+
+            });
+
+        });
+
+    </script>
+
+</body>
+
+</html>
