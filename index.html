@@ -71,9 +71,6 @@
         }).addTo(mymap);
 
         document.querySelector('#limpar').addEventListener('click', function (event) {
-            mymap.eachLayer(function (layer) {
-                mymap.removeLayer(layer);
-            });
 
             L.tileLayer('https://maps.googleapis.com/maps/vt?pb=!1m5!1m4!1i{z}!2i{x}!3i{y}!4i256!2m3!1e0!2sm!3i437142095!3m14!2spt-BR!3sBR!5e18!12m1!1e68!12m3!1e37!2m1!1ssmartmaps!12m4!1e26!2m2!1sstyles!2zcy50OjMzfHMuZTpsfHAudjpvZmY!4e0!23i1301875', {
                 attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
@@ -97,41 +94,64 @@
             var space = virgula_ref.split(" ")
             var params = space.join("+")
 
-            var locations = []
-            fetch("https://nominatim.openstreetmap.org/search.php?q=" + params + "&format=jsonv2").then((response) => {
-                return response.json()
-            }).then(obj => {
 
-                try {
-
-                    var url = "http://polygons.openstreetmap.fr/get_geojson.py?id=" + obj[0].osm_id + "&params=0"
-                    fetch(url)
-                        .then((response) => {
-                            var json = undefined
-                            try {
-                                json = response.json()
-                            } catch (error) { }
-                            return json
-                        }).then(obj => {
-                            // locations.push(obj)
-
-                            var geoJson = {
-                                "type": "LineString",
-                                "coordinates": obj["geometries"][0]["coordinates"]
-                            }
-
-                            myLayer.addData(obj);
-                        })
-                        .catch((err) => {
-                            alert("Não foi possivel localizar: " + local)
-                        });
-
-                } catch (error) {
-                    console.error(error);
-                }
+            var myHeaders = new Headers();
+            var myHeaders2 = new Headers();
+            myHeaders.append("Content-Type", "Application/json");
+            var myInit = {
+                headers: myHeaders,
+                mode: 'cors'
+            };
 
 
+            mymap.eachLayer(function (layer) {
+                mymap.removeLayer(layer);
             });
+
+            var locations = []
+            fetch("https://nominatim.openstreetmap.org/search.php?q=" + params + "&format=jsonv2", myInit)
+                .then((response) => {
+                    return response.json()
+                }).then(obj => {
+
+                    debugger
+                    try {
+
+                        myHeaders2.append("Content-Type", "application/json");
+                        var myInit2 = {
+                            headers: myHeaders2,
+                            mode: 'cors',
+                        };
+
+
+                        var url = "https://polygons.openstreetmap.fr/get_geojson.py?id=" + obj[0].osm_id + "&params=0"
+                        fetch(url)
+                            .then((response) => {
+                                var json = undefined
+                                try {
+                                    json = response.json()
+                                } catch (error) { }
+                                return json
+                            }).then(obj => {
+                                // locations.push(obj)
+
+                                var geoJson = {
+                                    "type": "LineString",
+                                    "coordinates": obj["geometries"][0]["coordinates"]
+                                }
+
+                                myLayer.addData(obj);
+                            })
+                            .catch((err) => {
+                                alert("Não foi possivel localizar: " + local)
+                            });
+
+                    } catch (error) {
+                        console.error(error);
+                    }
+
+
+                });
 
         });
 
