@@ -99,7 +99,9 @@
                 }).then(obj => {
 
                     try {
-                        var url = "https://cors-anywhere.herokuapp.com///polygons.openstreetmap.fr/get_geojson.py?id=" + obj[0].osm_id + "&params=0"
+
+                        // consumir do serviço implementado: http://localhost:3000/teste
+                        var url = "http://polygons.openstreetmap.fr/get_geojson.py?id=" + obj[0].osm_id + "&params=0"
                         axios.get(url)
                             .then((response) => {
                                 var json = undefined
