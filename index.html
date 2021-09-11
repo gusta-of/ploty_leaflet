@@ -25,6 +25,7 @@
 
         #mapid {
             height: 80vh;
+            border-radius: 30px;
         }
 
         .row {
@@ -51,6 +52,19 @@
         .col-lg {
             width: 80%;
         }
+
+        .resolt-search {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            height: 75vh;
+            border: solid 1px rgba(0, 0, 0, .4);
+            border-radius: 30px;
+            padding-top: 20px;
+            padding-bottom: 20px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 
@@ -70,7 +84,9 @@
     <div id="geojson" style="color: red;"></div>
     <div class="row">
         <div class="col col-2">
-
+            <div class="resolt-search">
+                teste
+            </div>
         </div>
         <div class="col col-lg">
             <div id="mapid"></div>
