@@ -146,13 +146,16 @@
         add_map(myLayer);
 
 
-        document.querySelector('#limpar').addEventListener('click', function (event) {
+        function clear_map() {
             mymap.eachLayer(function (layer) {
                 mymap.removeLayer(layer);
             });
             add_map(mymap);
             myLayer = L.geoJSON().addTo(mymap);
+        }
 
+        document.querySelector('#limpar').addEventListener('click', function (event) {
+            clear_map();
             document.querySelector(".result-search").innerHTML = '';
         });
 
@@ -184,6 +187,7 @@
                     axios.get(url)
                         .then((response) => {
 
+                            clear_map();
                             myLayer = L.geoJSON().addTo(mymap);
                             myLayer.addData(response.data);
 
@@ -191,11 +195,7 @@
                         })
                         .catch((err) => {
                             alert(err);
-                            mymap.eachLayer(function (layer) {
-                                mymap.removeLayer(layer);
-                            });
-                            add_map(mymap);
-                            myLayer = L.geoJSON().addTo(mymap);
+                           clear_map();
                         });
 
                     break;
@@ -203,6 +203,7 @@
 
                 default: {
 
+                    clear_map();
                     var marker = L.marker([element.lat, element.lon]).addTo(mymap);
                     marker.on('mouseover', function (e) {
                         this.openPopup();
