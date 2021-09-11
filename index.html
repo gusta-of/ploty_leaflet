@@ -24,8 +24,8 @@
         }
 
         #mapid {
-            height: 80vh;
-            border-radius: 30px;
+            height: 750px;
+            border: solid 1px rgba(0, 0, 0, .4);
         }
 
         .row {
@@ -53,17 +53,40 @@
             width: 80%;
         }
 
-        .resolt-search {
+        .result-search {
             display: flex;
             flex-direction: column;
             align-items: center;
             width: 100%;
-            height: 75vh;
+            height: 710px;
             border: solid 1px rgba(0, 0, 0, .4);
-            border-radius: 30px;
             padding-top: 20px;
             padding-bottom: 20px;
             overflow-y: auto;
+        }
+
+        .btn-local {
+            width: 80%;
+            margin-top: 10px;
+            border: none;
+            box-shadow: 1px 1px 3px rgba(0, 0, 0, .3);
+            border-radius: 20px;
+            background: rgba(0, 0, 0, .2);
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        ::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #fff;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: #000;
+            border-radius: 20px;
         }
     </style>
 </head>
@@ -84,8 +107,7 @@
     <div id="geojson" style="color: red;"></div>
     <div class="row">
         <div class="col col-2">
-            <div class="resolt-search">
-                teste
+            <div class="result-search">
             </div>
         </div>
         <div class="col col-lg">
@@ -130,6 +152,8 @@
             });
             add_map(mymap);
             myLayer = L.geoJSON().addTo(mymap);
+
+            document.querySelector(".result-search").innerHTML = '';
         });
 
         document.querySelector('#enviar').addEventListener('click', function (event) {
@@ -137,63 +161,64 @@
 
             var local = document.querySelector('#local').value
 
-            debugger
-
             axios.get("http://localhost:2002/service/area/search?param=" + local)
                 .then((res) => {
-                    debugger
-                    console.log(res);
+                    document.querySelector(".result-search").innerHTML = '';
+                    res.data.forEach((element) => {
+                        document.querySelector(".result-search").innerHTML +=
+                            "<button class='btn-local'  onclick='plotar(" + JSON.stringify(element) + ")'>" + element.display_name + ": " + element.category + "</button>";
+                    });
+
+                })
+                .catch((err) => {
+                    alert(err);
                 });
-            var virgula = local.split(",")
-            var virgula_ref = virgula.join("%2C")
-
-            var space = virgula_ref.split(" ")
-            var params = space.join("+")
-
-            var locations = []
-            // axios.get("https://nominatim.openstreetmap.org/search.php?q=" + params + "&format=jsonv2")
-            //     .then((response) => {
-
-            //         return response.data
-            //     }).then(obj => {
-
-            //         debugger
-
-            //         try {
-
-            //             // consumir do serviço implementado: http://localhost:3000/teste
-
-            //             var url = "http://localhost:2002/service/area/polygon?param=" + obj[0].osm_id
-            //             axios.get(url)
-            //                 .then((response) => {
-
-            //                     debugger
-            //                     var json = undefined
-            //                     try {
-            //                         json = response.data
-            //                     } catch (error) { }
-            //                     return json
-            //                 }).then(obj => {
-
-            //                     myLayer = L.geoJSON().addTo(mymap);
-            //                     myLayer.addData(obj.response);
-            //                 })
-            //                 .catch((err) => {
-            //                     alert("Não foi possivel localizar: " + local)
-            //                 });
-
-            //         } catch (error) {
-            //             alert(error);
-            //             mymap.eachLayer(function (layer) {
-            //                 mymap.removeLayer(layer);
-            //             });
-            //             add_map(mymap);
-            //             myLayer = L.geoJSON().addTo(mymap);
-            //         }
-
-            //     });
-
         });
+
+        const plotar = (element) => {
+
+            switch (element.category) {
+                case "boundary": {
+
+                    var url = "http://localhost:2002/service/area/polygon?param=" + element.osm_id
+                    axios.get(url)
+                        .then((response) => {
+
+                            myLayer = L.geoJSON().addTo(mymap);
+                            myLayer.addData(response.data);
+
+                            mymap.panTo(new L.LatLng(element.lat, element.lon));
+                        })
+                        .catch((err) => {
+                            alert(err);
+                            mymap.eachLayer(function (layer) {
+                                mymap.removeLayer(layer);
+                            });
+                            add_map(mymap);
+                            myLayer = L.geoJSON().addTo(mymap);
+                        });
+
+                    break;
+                }
+
+                default: {
+
+                    var marker = L.marker([element.lat, element.lon]).addTo(mymap);
+                    marker.on('mouseover', function (e) {
+                        this.openPopup();
+                    });
+                    marker.on('mouseout', function (e) {
+                        this.closePopup();
+                    });
+
+                    marker.bindPopup("<img src=" + element.icon + "><br>" + element.display_name);
+                    mymap.panTo(new L.LatLng(element.lat, element.lon));
+                    break;
+                }
+            }
+
+
+        }
 
     </script>
 
