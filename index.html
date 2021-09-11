@@ -98,12 +98,17 @@
                     return response.data
                 }).then(obj => {
 
+                    debugger
+
                     try {
 
                         // consumir do serviço implementado: http://localhost:3000/teste
-                        var url = "http://polygons.openstreetmap.fr/get_geojson.py?id=" + obj[0].osm_id + "&params=0"
+
+                        var url = "http://localhost:2002/service/area/polygon?param=" + obj[0].osm_id
                         axios.get(url)
                             .then((response) => {
+
+                                debugger
                                 var json = undefined
                                 try {
                                     json = response.data
@@ -112,7 +117,7 @@
                             }).then(obj => {
 
                                 myLayer = L.geoJSON().addTo(mymap);
-                                myLayer.addData(obj);
+                                myLayer.addData(obj.response);
                             })
                             .catch((err) => {
                                 alert("Não foi possivel localizar: " + local)
