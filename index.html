@@ -25,7 +25,31 @@
 
         #mapid {
             height: 80vh;
-            width: 90vw;
+        }
+
+        .row {
+            display: flex;
+            flex-direction: row;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+        }
+
+        .col {
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            padding: 0;
+            padding-left: 2px;
+            padding-right: 2px;
+        }
+
+        .col-2 {
+            width: 20%;
+        }
+
+        .col-lg {
+            width: 80%;
         }
     </style>
 </head>
@@ -39,8 +63,19 @@
     </div>
 
     <br />
+
+    <div class="row">
+
+    </div>
     <div id="geojson" style="color: red;"></div>
-    <div id="mapid"></div>
+    <div class="row">
+        <div class="col col-2">
+
+        </div>
+        <div class="col col-lg">
+            <div id="mapid"></div>
+        </div>
+    </div>
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
         integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
@@ -85,6 +120,14 @@
             event.preventDefault();
 
             var local = document.querySelector('#local').value
+
+            debugger
+
+            axios.get("http://localhost:2002/service/area/search?param=" + local)
+                .then((res) => {
+                    debugger
+                    console.log(res);
+                });
             var virgula = local.split(",")
             var virgula_ref = virgula.join("%2C")
 
@@ -92,47 +135,47 @@
             var params = space.join("+")
 
             var locations = []
-            axios.get("https://nominatim.openstreetmap.org/search.php?q=" + params + "&format=jsonv2")
-                .then((response) => {
+            // axios.get("https://nominatim.openstreetmap.org/search.php?q=" + params + "&format=jsonv2")
+            //     .then((response) => {
 
-                    return response.data
-                }).then(obj => {
+            //         return response.data
+            //     }).then(obj => {
 
-                    debugger
+            //         debugger
 
-                    try {
+            //         try {
 
-                        // consumir do serviço implementado: http://localhost:3000/teste
+            //             // consumir do serviço implementado: http://localhost:3000/teste
 
-                        var url = "http://localhost:2002/service/area/polygon?param=" + obj[0].osm_id
-                        axios.get(url)
-                            .then((response) => {
+            //             var url = "http://localhost:2002/service/area/polygon?param=" + obj[0].osm_id
+            //             axios.get(url)
+            //                 .then((response) => {
 
-                                debugger
-                                var json = undefined
-                                try {
-                                    json = response.data
-                                } catch (error) { }
-                                return json
-                            }).then(obj => {
+            //                     debugger
+            //                     var json = undefined
+            //                     try {
+            //                         json = response.data
+            //                     } catch (error) { }
+            //                     return json
+            //                 }).then(obj => {
 
-                                myLayer = L.geoJSON().addTo(mymap);
-                                myLayer.addData(obj.response);
-                            })
-                            .catch((err) => {
-                                alert("Não foi possivel localizar: " + local)
-                            });
+            //                     myLayer = L.geoJSON().addTo(mymap);
+            //                     myLayer.addData(obj.response);
+            //                 })
+            //                 .catch((err) => {
+            //                     alert("Não foi possivel localizar: " + local)
+            //                 });
 
-                    } catch (error) {
-                        alert(error);
-                        mymap.eachLayer(function (layer) {
-                            mymap.removeLayer(layer);
-                        });
-                        add_map(mymap);
-                        myLayer = L.geoJSON().addTo(mymap);
-                    }
+            //         } catch (error) {
+            //             alert(error);
+            //             mymap.eachLayer(function (layer) {
+            //                 mymap.removeLayer(layer);
+            //             });
+            //             add_map(mymap);
+            //             myLayer = L.geoJSON().addTo(mymap);
+            //         }
 
-                });
+            //     });
 
         });
 
