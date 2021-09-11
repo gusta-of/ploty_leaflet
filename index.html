@@ -96,6 +96,7 @@
     <br />
     <div style="display: flex;">
         <button id="enviar" style="margin: 5px;">Enviar</button>
+        <button id="localtion" onclick="navigator.geolocation.getCurrentPosition(showPosition)" style="margin: 5px;">Me localizar</button>
         <button id="limpar" style="margin: 5px;">Limpar</button>
     </div>
 
@@ -121,6 +122,21 @@
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
     <script type="text/javascript">
+
+        function showPosition(position) {
+            console.log(position.coords.latitude, position.coords.longitude)
+
+            var marker = L.marker([position.coords.latitude, position.coords.longitude]).addTo(mymap);
+                    marker.on('mouseover', function (e) {
+                        this.openPopup();
+                    });
+                    marker.on('mouseout', function (e) {
+                        this.closePopup();
+                    });
+
+                    marker.bindPopup("Você está aqui!");
+                    mymap.panTo(new L.LatLng(position.coords.latitude, position.coords.longitude));
+        }
 
         function add_map(mymap) {
             L.tileLayer('https://maps.googleapis.com/maps/vt?pb=!1m5!1m4!1i{z}!2i{x}!3i{y}!4i256!2m3!1e0!2sm!3i437142095!3m14!2spt-BR!3sBR!5e18!12m1!1e68!12m3!1e37!2m1!1ssmartmaps!12m4!1e26!2m2!1sstyles!2zcy50OjMzfHMuZTpsfHAudjpvZmY!4e0!23i1301875', {
@@ -195,7 +211,7 @@
                         })
                         .catch((err) => {
                             alert(err);
-                           clear_map();
+                            clear_map();
                         });
 
                     break;
