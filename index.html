@@ -96,7 +96,8 @@
     <br />
     <div style="display: flex;">
         <button id="enviar" style="margin: 5px;">Enviar</button>
-        <button id="localtion" onclick="navigator.geolocation.getCurrentPosition(showPosition)" style="margin: 5px;">Me localizar</button>
+        <button id="localtion" onclick="navigator.geolocation.getCurrentPosition(showPosition)" style="margin: 5px;">Me
+            localizar</button>
         <button id="limpar" style="margin: 5px;">Limpar</button>
     </div>
 
@@ -127,18 +128,13 @@
             console.log(position.coords.latitude, position.coords.longitude)
 
             var marker = L.marker([position.coords.latitude, position.coords.longitude]).addTo(mymap);
-                    marker.on('mouseover', function (e) {
-                        this.openPopup();
-                    });
-                    marker.on('mouseout', function (e) {
-                        this.closePopup();
-                    });
 
-                    marker.bindPopup("Você está aqui!");
-                    mymap.panTo(new L.LatLng(position.coords.latitude, position.coords.longitude));
+
+            marker.bindPopup("Você está aqui: " + position.coords.latitude + ", " + position.coords.longitude);
+            mymap.panTo(new L.LatLng(position.coords.latitude, position.coords.longitude));
         }
 
-        function add_map(mymap) {
+        function add_map() {
             L.tileLayer('https://maps.googleapis.com/maps/vt?pb=!1m5!1m4!1i{z}!2i{x}!3i{y}!4i256!2m3!1e0!2sm!3i437142095!3m14!2spt-BR!3sBR!5e18!12m1!1e68!12m3!1e37!2m1!1ssmartmaps!12m4!1e26!2m2!1sstyles!2zcy50OjMzfHMuZTpsfHAudjpvZmY!4e0!23i1301875', {
                 attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
                 maxZoom: 18,
@@ -147,6 +143,7 @@
                 zoomOffset: -1,
                 accessToken: 'your.mapbox.access.token'
             }).addTo(mymap);
+
         }
 
         L.Map.include({
@@ -158,15 +155,46 @@
         });
 
         var mymap = L.map('mapid').setView([40.2288202, -8.4512937], 7);
+
+        // Configura evento de click no mapa
+        mymap.on('click', function (e) {
+            const position = e.latlng;
+            clear_map();
+            var marker = L.marker([position.lat, position.lng]).addTo(mymap);
+
+
+
+            marker.bindPopup("Você está aqui: " + position.lat + ", " + position.lng + "<br><br>"
+                + "<a href='#' onclick='cicle(" + JSON.stringify(position) + ")'>circulo</a>");
+            mymap.panTo(new L.LatLng(position.lat, position.lng));
+
+
+            // removeMarker
+            marker.on('dbclick', (e) => {
+                mymap.removeLayer(marker);
+            });
+        });
+
+        function cicle(latlng) {
+
+            var circle = L.circle([latlng.lat, latlng.lng], {
+                color: 'red',
+                fillColor: '#f03',
+                fillOpacity: 0.3,
+                radius: 1000
+            }).addTo(mymap);
+
+        }
+
         var myLayer = L.geoJSON().addTo(mymap);
-        add_map(myLayer);
+        add_map();
 
 
         function clear_map() {
             mymap.eachLayer(function (layer) {
                 mymap.removeLayer(layer);
             });
-            add_map(mymap);
+            add_map();
             myLayer = L.geoJSON().addTo(mymap);
         }
 
@@ -221,12 +249,12 @@
 
                     clear_map();
                     var marker = L.marker([element.lat, element.lon]).addTo(mymap);
-                    marker.on('mouseover', function (e) {
-                        this.openPopup();
-                    });
-                    marker.on('mouseout', function (e) {
-                        this.closePopup();
-                    });
+                    // marker.on('mouseover', function (e) {
+                    //     this.openPopup();
+                    // });
+                    // marker.on('mouseout', function (e) {
+                    //     this.closePopup();
+                    // });
 
                     marker.bindPopup("<img src=" + element.icon + "><br>" + element.display_name);
                     mymap.panTo(new L.LatLng(element.lat, element.lon));
