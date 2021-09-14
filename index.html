@@ -159,15 +159,12 @@
         // Configura evento de click no mapa
         mymap.on('click', function (e) {
             const position = e.latlng;
-            clear_map();
+            // clear_map();
             var marker = L.marker([position.lat, position.lng]).addTo(mymap);
-
-
 
             marker.bindPopup("Você está aqui: " + position.lat + ", " + position.lng + "<br><br>"
                 + "<a href='#' onclick='cicle(" + JSON.stringify(position) + ")'>circulo</a>");
             mymap.panTo(new L.LatLng(position.lat, position.lng));
-
 
             // removeMarker
             marker.on('dbclick', (e) => {
@@ -181,9 +178,8 @@
                 color: 'red',
                 fillColor: '#f03',
                 fillOpacity: 0.3,
-                radius: 1000
+                radius: 10000
             }).addTo(mymap);
-
         }
 
         var myLayer = L.geoJSON().addTo(mymap);
