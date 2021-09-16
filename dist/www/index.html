@@ -204,7 +204,7 @@
 
             var local = document.querySelector('#local').value
 
-            axios.get("http://localhost:2002/service/area/search?param=" + local)
+            axios.get("http://164.90.177.208:2002/service/area/search?param=" + local)
                 .then((res) => {
                     document.querySelector(".result-search").innerHTML = '';
                     res.data.forEach((element) => {
@@ -223,7 +223,7 @@
             switch (element.category) {
                 case "boundary": {
 
-                    var url = "http://localhost:2002/service/area/polygon?param=" + element.osm_id
+                    var url = "http://164.90.177.208:2002/service/area/polygon?param=" + element.osm_id
                     axios.get(url)
                         .then((response) => {
 
