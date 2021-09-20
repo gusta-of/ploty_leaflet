@@ -10,96 +10,25 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
         integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
         crossorigin="" />
+    <link rel="stylesheet" href="./static/css/style.css">
 
-
-    <style type="text/css">
-        html,
-        body {
-            padding: 20px;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #mapid {
-            height: 750px;
-            border: solid 1px rgba(0, 0, 0, .4);
-        }
-
-        .row {
-            display: flex;
-            flex-direction: row;
-            margin: 0;
-            padding: 0;
-            width: 100%;
-        }
-
-        .col {
-            display: flex;
-            flex-direction: column;
-            margin: 0;
-            padding: 0;
-            padding-left: 2px;
-            padding-right: 2px;
-        }
-
-        .col-2 {
-            width: 20%;
-        }
-
-        .col-lg {
-            width: 80%;
-        }
-
-        .result-search {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            height: 710px;
-            border: solid 1px rgba(0, 0, 0, .4);
-            padding-top: 20px;
-            padding-bottom: 20px;
-            overflow-y: auto;
-        }
-
-        .btn-local {
-            width: 80%;
-            margin-top: 10px;
-            border: none;
-            box-shadow: 1px 1px 3px rgba(0, 0, 0, .3);
-            border-radius: 20px;
-            background: rgba(0, 0, 0, .2);
-            padding: 8px;
-            cursor: pointer;
-        }
-
-        ::-webkit-scrollbar {
-            width: 3px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #fff;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background-color: #000;
-            border-radius: 20px;
-        }
-    </style>
 </head>
 
 <body>
-    <input type="text" id="local" placeholder="local aqui..!" style="height: 4vh; width: 80vw; font-size: 15px;">
-    <br />
-    <div style="display: flex;">
-        <button id="enviar" style="margin: 5px;">Enviar</button>
-        <button id="localtion" onclick="navigator.geolocation.getCurrentPosition(showPosition)" style="margin: 5px;">Me
-            localizar</button>
-        <button id="limpar" style="margin: 5px;">Limpar</button>
-    </div>
+    <form accept="GET" id="form">
+        
+        <input type="text" id="local" name="local" placeholder="local aqui..!" style="height: 4vh; width: 80vw; font-size: 15px;" autocomplete="off">
+        
+        <br />
+        <div style="display: flex;">
+            <button type="submit" id="enviar" style="margin: 5px;">Enviar</button>
+            <button id="localtion" onclick="navigator.geolocation.getCurrentPosition(showPosition)" style="margin: 5px;">Me
+                localizar</button>
+            <button id="limpar" style="margin: 5px;">Limpar</button>
+    
+            <button id="navegar" style="margin: 5px;">Próxima página >></button>
+        </div>
+    </form>
 
     <br />
 
@@ -122,146 +51,9 @@
         crossorigin=""></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
-    <script type="text/javascript">
-
-        function showPosition(position) {
-            console.log(position.coords.latitude, position.coords.longitude)
-
-            var marker = L.marker([position.coords.latitude, position.coords.longitude]).addTo(mymap);
-
-
-            marker.bindPopup("Você está aqui: " + position.coords.latitude + ", " + position.coords.longitude);
-            mymap.panTo(new L.LatLng(position.coords.latitude, position.coords.longitude));
-        }
-
-        function add_map() {
-            L.tileLayer('https://maps.googleapis.com/maps/vt?pb=!1m5!1m4!1i{z}!2i{x}!3i{y}!4i256!2m3!1e0!2sm!3i437142095!3m14!2spt-BR!3sBR!5e18!12m1!1e68!12m3!1e37!2m1!1ssmartmaps!12m4!1e26!2m2!1sstyles!2zcy50OjMzfHMuZTpsfHAudjpvZmY!4e0!23i1301875', {
-                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-                maxZoom: 18,
-                id: 'mapbox/streets-v11',
-                tileSize: 512,
-                zoomOffset: -1,
-                accessToken: 'your.mapbox.access.token'
-            }).addTo(mymap);
-
-        }
-
-        L.Map.include({
-            'clearLayers': function () {
-                this.eachLayer(function (layer) {
-                    this.removeLayer(layer);
-                }, this);
-            }
-        });
-
-        var mymap = L.map('mapid').setView([40.2288202, -8.4512937], 7);
-
-        // Configura evento de click no mapa
-        mymap.on('click', function (e) {
-            const position = e.latlng;
-            // clear_map();
-            var marker = L.marker([position.lat, position.lng]).addTo(mymap);
-
-            marker.bindPopup("Você está aqui: " + position.lat + ", " + position.lng + "<br><br>"
-                + "<a href='#' onclick='cicle(" + JSON.stringify(position) + ")'>circulo</a>");
-            mymap.panTo(new L.LatLng(position.lat, position.lng));
-
-            // removeMarker
-            marker.on('dbclick', (e) => {
-                mymap.removeLayer(marker);
-            });
-        });
-
-        function cicle(latlng) {
-
-            var circle = L.circle([latlng.lat, latlng.lng], {
-                color: 'red',
-                fillColor: '#f03',
-                fillOpacity: 0.3,
-                radius: 10000
-            }).addTo(mymap);
-        }
-
-        var myLayer = L.geoJSON().addTo(mymap);
-        add_map();
-
-
-        function clear_map() {
-            mymap.eachLayer(function (layer) {
-                mymap.removeLayer(layer);
-            });
-            add_map();
-            myLayer = L.geoJSON().addTo(mymap);
-        }
-
-        document.querySelector('#limpar').addEventListener('click', function (event) {
-            clear_map();
-            document.querySelector(".result-search").innerHTML = '';
-        });
-
-        document.querySelector('#enviar').addEventListener('click', function (event) {
-            event.preventDefault();
-
-            var local = document.querySelector('#local').value
-
-            axios.get("http://164.90.177.208:2002/service/area/search?param=" + local)
-                .then((res) => {
-                    document.querySelector(".result-search").innerHTML = '';
-                    res.data.forEach((element) => {
-                        document.querySelector(".result-search").innerHTML +=
-                            "<button class='btn-local'  onclick='plotar(" + JSON.stringify(element) + ")'>" + element.display_name + ": " + element.category + "</button>";
-                    });
-
-                })
-                .catch((err) => {
-                    alert(err);
-                });
-        });
-
-        const plotar = (element) => {
-
-            switch (element.category) {
-                case "boundary": {
-
-                    var url = "http://164.90.177.208:2002/service/area/polygon?param=" + element.osm_id
-                    axios.get(url)
-                        .then((response) => {
-
-                            clear_map();
-                            myLayer = L.geoJSON().addTo(mymap);
-                            myLayer.addData(response.data);
-
-                            mymap.panTo(new L.LatLng(element.lat, element.lon));
-                        })
-                        .catch((err) => {
-                            alert(err);
-                            clear_map();
-                        });
-
-                    break;
-                }
-
-                default: {
-
-                    clear_map();
-                    var marker = L.marker([element.lat, element.lon]).addTo(mymap);
-                    // marker.on('mouseover', function (e) {
-                    //     this.openPopup();
-                    // });
-                    // marker.on('mouseout', function (e) {
-                    //     this.closePopup();
-                    // });
-
-                    marker.bindPopup("<img src=" + element.icon + "><br>" + element.display_name);
-                    mymap.panTo(new L.LatLng(element.lat, element.lon));
-                    break;
-                }
-            }
-
-
-        }
-
-    </script>
+    <script src="./static/js/state.js"></script>
+    <script src="./static/js/utils_navigate.js"></script>
+    <script src="./static/js/index.js"></script>
 
 </body>
 
