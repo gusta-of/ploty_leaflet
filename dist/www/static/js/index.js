@@ -8,9 +8,7 @@
 
         let form_values = StackState.objToDictionary(state.object_reference['form'])
         form_values.forEach((element, i) => {
-
             for (var atribute in element) {
-
                 form_pesquisa.querySelector("input[name=" + atribute + "]").value = element[atribute] ?? "";
             }
         });
